@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Star, MoonStar } from 'lucide-react';
+import { Star, MoonStar, Sparkles } from 'lucide-react';
 
 const DreamTitle = () => {
   return (
@@ -27,6 +27,10 @@ const DreamTitle = () => {
       <p className="text-muted-foreground max-w-md mx-auto">
         Describe your dream and receive mystical insights into your subconscious mind
       </p>
+      <div className="flex items-center justify-center mt-2 text-xs text-dream-accent">
+        <Sparkles className="h-3 w-3 mr-1" />
+        <span>Powered by AI dream interpretation</span>
+      </div>
     </div>
   );
 };

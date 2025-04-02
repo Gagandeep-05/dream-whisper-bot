@@ -1,10 +1,10 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send } from 'lucide-react';
 import ChatMessage from './ChatMessage';
+import { useToast } from "@/hooks/use-toast";
 
 interface Message {
   id: number;
@@ -29,7 +29,7 @@ const dreamInterpretations = [
   },
   {
     keywords: ['flying', 'flew', 'float'],
-    response: "Flying in dreams typically symbolizes freedom, breaking free from limitations, or gaining a new perspective on life. It might reflect your desire for liberation from constraints or your ability to rise above challenges."
+    response: "Flying in dreams typically symbolize freedom, breaking free from limitations, or gaining a new perspective on life. It might reflect your desire for liberation from constraints or your ability to rise above challenges."
   },
   {
     keywords: ['teeth', 'tooth', 'losing teeth'],
@@ -41,7 +41,7 @@ const dreamInterpretations = [
   },
   {
     keywords: ['water', 'ocean', 'sea', 'swimming', 'flood'],
-    response: "Water in dreams often symbolizes your emotional state. Calm water may represent peace of mind, while turbulent water could indicate emotional turmoil. Deep water might suggest exploring your unconscious mind."
+    response: "Water in dreams often symbolize your emotional state. Calm water may represent peace of mind, while turbulent water could indicate emotional turmoil. Deep water might suggest exploring your unconscious mind."
   },
   {
     keywords: ['death', 'dying', 'dead'],
@@ -58,32 +58,32 @@ const dreamInterpretations = [
 ];
 
 const getResponseForDream = (dreamDescription: string) => {
-  // Convert to lowercase for easier matching
   const dreamLower = dreamDescription.toLowerCase();
   
-  // Find matching interpretations based on keywords
   const matchingInterpretations = dreamInterpretations.filter(item => 
     item.keywords.some(keyword => dreamLower.includes(keyword))
   );
   
   if (matchingInterpretations.length > 0) {
-    // If multiple matches, choose one randomly for variety
     const randomIndex = Math.floor(Math.random() * matchingInterpretations.length);
     return matchingInterpretations[randomIndex].response;
   }
   
-  // Default response if no keywords match
   return "Your dream appears to be unique. Dreams often reflect our subconscious processing daily experiences and emotions. The symbols in your dream may represent aspects of yourself or situations you're currently navigating. Consider how the emotions in your dream relate to your waking life.";
 };
+
+const HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta";
 
 const ChatInterface = () => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const { toast } = useToast();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [apiKey, setApiKey] = useState<string>(localStorage.getItem('dream-whisper-api-key') || '');
+  const [showApiInput, setShowApiInput] = useState<boolean>(!localStorage.getItem('dream-whisper-api-key'));
 
   useEffect(() => {
-    // Scroll to bottom when messages change
     if (scrollAreaRef.current) {
       const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
       if (scrollContainer) {
@@ -92,10 +92,63 @@ const ChatInterface = () => {
     }
   }, [messages]);
 
-  const handleSendMessage = () => {
+  const generateAIResponse = async (dreamText: string) => {
+    try {
+      if (apiKey) {
+        const response = await fetch(HUGGINGFACE_API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            inputs: `You are a dream interpreter AI named Dream Whisper. Analyze this dream and provide insightful psychological interpretation in 3-5 sentences. Focus on symbolism, emotions, and possible real-life connections. Be mystical but insightful. Dream: "${dreamText}"`,
+            parameters: {
+              max_new_tokens: 250,
+              temperature: 0.7,
+              top_p: 0.9,
+              do_sample: true
+            }
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data[0] && data[0].generated_text) {
+            const fullText = data[0].generated_text;
+            const aiResponse = fullText.substring(fullText.indexOf(dreamText) + dreamText.length);
+            return aiResponse.trim();
+          }
+        }
+        
+        throw new Error("API response format unexpected");
+      }
+    } catch (error) {
+      console.error("AI API error:", error);
+      toast({
+        title: "AI Service Unavailable",
+        description: "Using built-in interpretations instead.",
+        variant: "destructive",
+      });
+    }
+    
+    return getResponseForDream(dreamText);
+  };
+
+  const handleSaveApiKey = () => {
+    if (apiKey.trim()) {
+      localStorage.setItem('dream-whisper-api-key', apiKey);
+      setShowApiInput(false);
+      toast({
+        title: "API Key Saved",
+        description: "Your API key has been saved for future sessions."
+      });
+    }
+  };
+
+  const handleSendMessage = async () => {
     if (input.trim() === '') return;
     
-    // Add user message
     const userMessage = {
       id: messages.length + 1,
       content: input,
@@ -107,9 +160,8 @@ const ChatInterface = () => {
     setInput('');
     setLoading(true);
     
-    // Simulate AI processing time
-    setTimeout(() => {
-      const response = getResponseForDream(input);
+    try {
+      const response = await generateAIResponse(input);
       
       const aiMessage = {
         id: messages.length + 2,
@@ -119,12 +171,49 @@ const ChatInterface = () => {
       };
       
       setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error("Error generating response:", error);
+      const errorMessage = {
+        id: messages.length + 2,
+        content: "I'm having trouble interpreting dreams right now. Please try again later.",
+        isUser: false,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   return (
     <div className="flex flex-col bg-card/30 backdrop-blur-sm border rounded-xl h-[500px] shadow-lg">
+      {showApiInput && (
+        <div className="p-3 border-b bg-card/50">
+          <div className="flex flex-col gap-2">
+            <p className="text-xs text-muted-foreground">Enter your Hugging Face API key for enhanced dream interpretation:</p>
+            <div className="flex gap-2">
+              <Input
+                type="password"
+                placeholder="Hugging Face API Key"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                className="bg-background/50 text-sm"
+              />
+              <Button 
+                onClick={handleSaveApiKey} 
+                disabled={!apiKey.trim()}
+                size="sm"
+              >
+                Save
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground italic">
+              Get your free API key at <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">huggingface.co</a>
+            </p>
+          </div>
+        </div>
+      )}
+      
       <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
         <div className="space-y-4">
           {messages.map(message => (

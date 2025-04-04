@@ -1,8 +1,9 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send } from 'lucide-react';
+import { Send, RefreshCw } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import { useToast } from "@/hooks/use-toast";
 
@@ -146,6 +147,14 @@ const ChatInterface = () => {
     }
   };
 
+  const handleUpdateApiKey = () => {
+    setShowApiInput(true);
+    toast({
+      title: "Update API Key",
+      description: "You can now enter a new API key."
+    });
+  };
+
   const handleSendMessage = async () => {
     if (input.trim() === '') return;
     
@@ -187,7 +196,7 @@ const ChatInterface = () => {
 
   return (
     <div className="flex flex-col bg-card/30 backdrop-blur-sm border rounded-xl h-[500px] shadow-lg">
-      {showApiInput && (
+      {showApiInput ? (
         <div className="p-3 border-b bg-card/50">
           <div className="flex flex-col gap-2">
             <p className="text-xs text-muted-foreground">Enter your Hugging Face API key for enhanced dream interpretation:</p>
@@ -211,6 +220,18 @@ const ChatInterface = () => {
               Get your free API key at <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">huggingface.co</a>
             </p>
           </div>
+        </div>
+      ) : (
+        <div className="p-2 border-b bg-card/50 flex justify-end">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleUpdateApiKey}
+            className="flex items-center gap-1 text-xs"
+          >
+            <RefreshCw className="h-3 w-3" />
+            Update API Key
+          </Button>
         </div>
       )}
       

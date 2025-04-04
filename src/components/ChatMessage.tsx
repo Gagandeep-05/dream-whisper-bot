@@ -8,13 +8,15 @@ interface ChatMessageProps {
   isUser?: boolean;
   timestamp?: Date;
   loading?: boolean;
+  isDarkMode?: boolean;
 }
 
 const ChatMessage = ({ 
   message, 
   isUser = false, 
   timestamp = new Date(),
-  loading = false 
+  loading = false,
+  isDarkMode = true
 }: ChatMessageProps) => {
   return (
     <div className={cn(
@@ -23,7 +25,13 @@ const ChatMessage = ({
     )}>
       <Avatar className={cn(
         "h-8 w-8 border",
-        isUser ? "bg-accent/20 border-accent/30" : "bg-primary/20 border-primary/30"
+        isUser 
+          ? isDarkMode 
+            ? "bg-accent/20 border-accent/30" 
+            : "bg-dream-orange/20 border-dream-orange/30"
+          : isDarkMode 
+            ? "bg-primary/20 border-primary/30" 
+            : "bg-dream-orange/20 border-dream-orange/30"
       )}>
         <AvatarFallback>
           {isUser ? 'U' : 'DW'}
@@ -32,15 +40,25 @@ const ChatMessage = ({
       
       <div className={cn(
         "rounded-xl p-3 max-w-[80%]",
-        isUser ? 
-          "bg-accent/10 border border-accent/20 text-right" : 
-          "bg-primary/10 border border-primary/20"
+        isUser 
+          ? isDarkMode 
+            ? "bg-accent/10 border border-accent/20 text-right" 
+            : "bg-dream-orange/10 border border-dream-orange/20 text-right"
+          : isDarkMode 
+            ? "bg-primary/10 border border-primary/20" 
+            : "bg-dream-orange/10 border border-dream-orange/20"
       )}>
         {loading ? (
           <div className="flex items-center justify-center space-x-1 h-6 py-2">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" style={{animationDelay: '0.2s'}}></div>
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" style={{animationDelay: '0.4s'}}></div>
+            <div className={`w-2 h-2 rounded-full animate-pulse ${
+              isDarkMode ? 'bg-primary' : 'bg-dream-orange'
+            }`}></div>
+            <div className={`w-2 h-2 rounded-full animate-pulse ${
+              isDarkMode ? 'bg-primary' : 'bg-dream-orange'
+            }`} style={{animationDelay: '0.2s'}}></div>
+            <div className={`w-2 h-2 rounded-full animate-pulse ${
+              isDarkMode ? 'bg-primary' : 'bg-dream-orange'
+            }`} style={{animationDelay: '0.4s'}}></div>
           </div>
         ) : (
           <>

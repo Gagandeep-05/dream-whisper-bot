@@ -21,7 +21,11 @@ const Index = () => {
   }, [isDarkMode]);
 
   return (
-    <div className={`min-h-screen bg-dream-gradient transition-all duration-300 ${isDarkMode ? 'dark' : ''}`}>
+    <div className={`min-h-screen transition-all duration-300 ${
+      isDarkMode 
+        ? 'bg-dream-gradient dark' 
+        : 'bg-dream-light-gradient'
+    }`}>
       <div className="relative overflow-hidden">
         {/* Animated background elements */}
         <div className="absolute inset-0 overflow-hidden">
@@ -48,23 +52,27 @@ const Index = () => {
               variant="ghost"
               size="icon"
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className="rounded-full bg-background/20 backdrop-blur-sm"
+              className={`rounded-full backdrop-blur-sm ${
+                isDarkMode 
+                  ? 'bg-background/20 text-yellow-200' 
+                  : 'bg-white/30 text-dream-orange'
+              }`}
             >
               {isDarkMode ? (
-                <SunIcon className="h-5 w-5 text-yellow-200" />
+                <SunIcon className="h-5 w-5" />
               ) : (
-                <MoonIcon className="h-5 w-5 text-dream-purple" />
+                <MoonIcon className="h-5 w-5" />
               )}
             </Button>
           </div>
           
-          <DreamTitle />
+          <DreamTitle isDarkMode={isDarkMode} />
           
           <div className="max-w-xl mx-auto">
-            <ChatInterface />
+            <ChatInterface isDarkMode={isDarkMode} />
           </div>
           
-          {!isMobile && <DreamInsight />}
+          {!isMobile && <DreamInsight isDarkMode={isDarkMode} />}
         </div>
       </div>
     </div>

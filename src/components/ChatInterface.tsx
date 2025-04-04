@@ -7,6 +7,10 @@ import { Send, RefreshCw } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import { useToast } from "@/hooks/use-toast";
 
+interface ChatInterfaceProps {
+  isDarkMode: boolean;
+}
+
 interface Message {
   id: number;
   content: string;
@@ -75,7 +79,7 @@ const getResponseForDream = (dreamDescription: string) => {
 
 const HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta";
 
-const ChatInterface = () => {
+const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -195,9 +199,15 @@ const ChatInterface = () => {
   };
 
   return (
-    <div className="flex flex-col bg-card/30 backdrop-blur-sm border rounded-xl h-[500px] shadow-lg">
+    <div className={`flex flex-col rounded-xl h-[500px] shadow-lg ${
+      isDarkMode
+        ? 'bg-card/30 backdrop-blur-sm border border-white/20'
+        : 'bg-white/80 backdrop-blur-sm border border-dream-orange/20'
+    }`}>
       {showApiInput ? (
-        <div className="p-3 border-b bg-card/50">
+        <div className={`p-3 border-b ${
+          isDarkMode ? 'bg-card/50' : 'bg-white/50 border-dream-orange/10'
+        }`}>
           <div className="flex flex-col gap-2">
             <p className="text-xs text-muted-foreground">Enter your Hugging Face API key for enhanced dream interpretation:</p>
             <div className="flex gap-2">
@@ -206,23 +216,30 @@ const ChatInterface = () => {
                 placeholder="Hugging Face API Key"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
-                className="bg-background/50 text-sm"
+                className={`text-sm ${
+                  isDarkMode ? 'bg-background/50' : 'bg-white/70'
+                }`}
               />
               <Button 
                 onClick={handleSaveApiKey} 
                 disabled={!apiKey.trim()}
                 size="sm"
+                className={isDarkMode ? '' : 'bg-dream-orange hover:bg-dream-orange/90'}
               >
                 Save
               </Button>
             </div>
             <p className="text-xs text-muted-foreground italic">
-              Get your free API key at <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary">huggingface.co</a>
+              Get your free API key at <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className={`underline ${
+                isDarkMode ? 'hover:text-primary' : 'hover:text-dream-orange'
+              }`}>huggingface.co</a>
             </p>
           </div>
         </div>
       ) : (
-        <div className="p-2 border-b bg-card/50 flex justify-end">
+        <div className={`p-2 border-b flex justify-end ${
+          isDarkMode ? 'bg-card/50' : 'bg-white/50 border-dream-orange/10'
+        }`}>
           <Button
             variant="ghost"
             size="sm"
@@ -243,6 +260,7 @@ const ChatInterface = () => {
               message={message.content}
               isUser={message.isUser}
               timestamp={message.timestamp}
+              isDarkMode={isDarkMode}
             />
           ))}
           {loading && (
@@ -250,12 +268,15 @@ const ChatInterface = () => {
               message=""
               loading={true}
               timestamp={new Date()}
+              isDarkMode={isDarkMode}
             />
           )}
         </div>
       </ScrollArea>
       
-      <div className="p-3 border-t bg-card/50">
+      <div className={`p-3 border-t ${
+        isDarkMode ? 'bg-card/50' : 'bg-white/50 border-dream-orange/10'
+      }`}>
         <div className="flex gap-2">
           <Input
             placeholder="Describe your dream..."
@@ -264,12 +285,13 @@ const ChatInterface = () => {
             onKeyPress={(e) => {
               if (e.key === 'Enter') handleSendMessage();
             }}
-            className="bg-background/50"
+            className={isDarkMode ? 'bg-background/50' : 'bg-white/70'}
           />
           <Button 
             onClick={handleSendMessage} 
             disabled={input.trim() === '' || loading}
             size="icon"
+            className={isDarkMode ? '' : 'bg-dream-orange hover:bg-dream-orange/90'}
           >
             <Send className="h-4 w-4" />
           </Button>

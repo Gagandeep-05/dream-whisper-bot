@@ -67,7 +67,10 @@ export default {
 					dark: '#1A1F2C',
 					purple: '#9b87f5',
 					accent: '#7E69AB',
-					light: '#E5DEFF'
+					light: '#E5DEFF',
+					orange: '#F97316',
+					orangeLight: '#FFEFE4',
+					warmWhite: '#FFF9F5'
 				}
 			},
 			borderRadius: {
@@ -106,7 +109,9 @@ export default {
 			},
 			backgroundImage: {
 				'dream-gradient': 'linear-gradient(to bottom right, #1A1F2C, #2A2C4A)',
-				'dream-card': 'linear-gradient(to bottom right, rgba(155, 135, 245, 0.1), rgba(126, 105, 171, 0.05))'
+				'dream-card': 'linear-gradient(to bottom right, rgba(155, 135, 245, 0.1), rgba(126, 105, 171, 0.05))',
+				'dream-light-gradient': 'linear-gradient(to bottom right, #FFF9F5, #FFEFE4)',
+				'dream-light-card': 'linear-gradient(to bottom right, rgba(249, 115, 22, 0.1), rgba(249, 115, 22, 0.05))'
 			}
 		}
 	},

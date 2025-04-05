@@ -1,11 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Button } from '@/components/ui/button';
-import { PlusCircle, Book, Calendar, Sparkles, Star } from 'lucide-react';
+import { Book } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import JournalHeader from './journal/JournalHeader';
+import JournalContent from './journal/JournalContent';
 
 interface SavedDream {
   id: string;
@@ -164,93 +164,18 @@ const DreamJournal = ({ isDarkMode }: DreamJournalProps) => {
           </SheetTitle>
         </SheetHeader>
         
-        <div className="mt-4 flex items-center justify-between">
-          <div className={`flex items-center gap-2 ${
-            isDarkMode ? 'text-dream-accent' : 'text-dream-orange'
-          }`}>
-            <Calendar className="h-4 w-4" />
-            <span className="text-sm">Dream Streak:</span>
-            <Badge variant={isDarkMode ? "default" : "outline"} className={`${
-              isDarkMode ? 'bg-dream-purple/50' : 'border-dream-orange text-dream-orange'
-            }`}>
-              {currentStreak} day{currentStreak !== 1 ? 's' : ''}
-            </Badge>
-          </div>
-          
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className={`text-xs ${
-                isDarkMode 
-                  ? 'border-dream-purple/30 hover:bg-dream-purple/20' 
-                  : 'border-dream-orange/30 hover:bg-dream-orange/10 text-dream-orange'
-              }`}
-              onClick={exportJournal}
-            >
-              Export
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className={`text-xs ${
-                isDarkMode 
-                  ? 'border-dream-purple/30 hover:bg-destructive/20' 
-                  : 'border-dream-orange/30 hover:bg-destructive/10 text-dream-orange'
-              }`}
-              onClick={clearJournal}
-            >
-              Clear
-            </Button>
-          </div>
-        </div>
+        <JournalHeader 
+          isDarkMode={isDarkMode}
+          currentStreak={currentStreak}
+          exportJournal={exportJournal}
+          clearJournal={clearJournal}
+        />
         
-        {savedDreams.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-[300px] text-center opacity-70">
-            <Sparkles className={`h-10 w-10 mb-4 ${
-              isDarkMode ? 'text-dream-purple/50' : 'text-dream-orange/50'
-            }`} />
-            <p className="mb-2">Your dream journal is empty</p>
-            <p className="text-sm text-muted-foreground">Dreams you save will appear here</p>
-          </div>
-        ) : (
-          <ScrollArea className="mt-6 h-[450px] pr-4">
-            <div className="space-y-6">
-              {savedDreams.map((dream) => (
-                <div 
-                  key={dream.id} 
-                  className={`p-4 rounded-lg ${
-                    isDarkMode 
-                      ? 'bg-background/20 border border-dream-purple/20' 
-                      : 'bg-white/60 border border-dream-orange/20'
-                  }`}
-                >
-                  <div className="flex justify-between items-center mb-2">
-                    <div className={`text-sm font-medium ${
-                      isDarkMode ? 'text-dream-purple' : 'text-dream-orange'
-                    }`}>
-                      {formatDate(dream.date)}
-                    </div>
-                    {dream.streak > 1 && (
-                      <div className="flex items-center">
-                        <Star className={`h-3 w-3 mr-1 ${
-                          isDarkMode ? 'text-dream-accent' : 'text-dream-orange/80'
-                        }`} />
-                        <span className="text-xs opacity-70">Day {dream.streak}</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <h4 className="text-sm font-medium mb-1">Dream:</h4>
-                  <p className="text-sm mb-3 whitespace-pre-wrap">{dream.content}</p>
-                  
-                  <h4 className="text-sm font-medium mb-1">Interpretation:</h4>
-                  <p className="text-sm opacity-90 whitespace-pre-wrap">{dream.interpretation}</p>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-        )}
+        <JournalContent 
+          isDarkMode={isDarkMode}
+          savedDreams={savedDreams}
+          formatDate={formatDate}
+        />
       </SheetContent>
     </Sheet>
   );

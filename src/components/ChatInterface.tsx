@@ -1,11 +1,11 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, RefreshCw } from 'lucide-react';
+import { Send, RefreshCw, BookmarkPlus } from 'lucide-react';
 import ChatMessage from './ChatMessage';
 import { useToast } from "@/hooks/use-toast";
+import { v4 as uuidv4 } from 'uuid';
 
 interface ChatInterfaceProps {
   isDarkMode: boolean;
@@ -87,6 +87,9 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [apiKey, setApiKey] = useState<string>(localStorage.getItem('dream-whisper-api-key') || '');
   const [showApiInput, setShowApiInput] = useState<boolean>(!localStorage.getItem('dream-whisper-api-key'));
+  const [canSaveDream, setCanSaveDream] = useState(false);
+  const [lastUserDream, setLastUserDream] = useState('');
+  const [lastAiResponse, setLastAiResponse] = useState('');
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -95,6 +98,22 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
         scrollContainer.scrollTop = scrollContainer.scrollHeight;
       }
     }
+  }, [messages]);
+
+  useEffect(() => {
+    if (messages.length >= 3) {
+      const userMessageIndex = messages.findIndex(m => m.isUser);
+      if (userMessageIndex !== -1 && userMessageIndex < messages.length - 1) {
+        const aiResponseIndex = messages.findIndex((m, i) => !m.isUser && i > userMessageIndex);
+        if (aiResponseIndex !== -1) {
+          setCanSaveDream(true);
+          setLastUserDream(messages[userMessageIndex].content);
+          setLastAiResponse(messages[aiResponseIndex].content);
+          return;
+        }
+      }
+    }
+    setCanSaveDream(false);
   }, [messages]);
 
   const generateAIResponse = async (dreamText: string) => {
@@ -198,6 +217,56 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
     }
   };
 
+  const handleSaveDream = () => {
+    const savedDreamsJson = localStorage.getItem('dream-whisper-journal');
+    let savedDreams = savedDreamsJson ? JSON.parse(savedDreamsJson) : [];
+    
+    const storedStreak = localStorage.getItem('dream-whisper-streak');
+    let currentStreak = storedStreak ? parseInt(storedStreak, 10) : 0;
+    
+    const today = new Date();
+    const todayString = today.toDateString();
+    const hasDreamToday = savedDreams.some((dream: any) => {
+      const dreamDate = new Date(dream.date).toDateString();
+      return dreamDate === todayString;
+    });
+    
+    if (!hasDreamToday) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayString = yesterday.toDateString();
+      
+      const hadDreamYesterday = savedDreams.some((dream: any) => {
+        const dreamDate = new Date(dream.date).toDateString();
+        return dreamDate === yesterdayString;
+      });
+      
+      if (hadDreamYesterday || savedDreams.length === 0) {
+        currentStreak += 1;
+      } else {
+        currentStreak = 1;
+      }
+      
+      localStorage.setItem('dream-whisper-streak', currentStreak.toString());
+    }
+    
+    const newDream = {
+      id: uuidv4(),
+      date: new Date(),
+      content: lastUserDream,
+      interpretation: lastAiResponse,
+      streak: currentStreak
+    };
+    
+    savedDreams = [newDream, ...savedDreams];
+    localStorage.setItem('dream-whisper-journal', JSON.stringify(savedDreams));
+    
+    toast({
+      title: "Dream Saved",
+      description: "Your dream has been saved to your journal."
+    });
+  };
+
   return (
     <div className={`flex flex-col rounded-xl h-[500px] shadow-lg ${
       isDarkMode
@@ -237,14 +306,31 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
           </div>
         </div>
       ) : (
-        <div className={`p-2 border-b flex justify-end ${
+        <div className={`p-2 border-b flex justify-between items-center ${
           isDarkMode ? 'bg-card/50' : 'bg-white/50 border-dream-orange/10'
         }`}>
           <Button
             variant="ghost"
             size="sm"
+            onClick={handleSaveDream}
+            disabled={!canSaveDream}
+            className={`flex items-center gap-1 text-xs ${
+              !canSaveDream ? 'opacity-50' : ''
+            } ${
+              isDarkMode ? '' : 'text-dream-orange hover:text-dream-orange/90'
+            }`}
+          >
+            <BookmarkPlus className="h-3 w-3" />
+            Save Dream
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleUpdateApiKey}
-            className="flex items-center gap-1 text-xs"
+            className={`flex items-center gap-1 text-xs ${
+              isDarkMode ? '' : 'text-dream-orange hover:text-dream-orange/90'
+            }`}
           >
             <RefreshCw className="h-3 w-3" />
             Update API Key

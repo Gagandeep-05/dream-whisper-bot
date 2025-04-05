@@ -3,6 +3,7 @@ import React from 'react';
 import DreamTitle from '@/components/DreamTitle';
 import ChatInterface from '@/components/ChatInterface';
 import DreamInsight from '@/components/DreamInsight';
+import DreamJournal from '@/components/DreamJournal';
 import { MoonIcon, SunIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -65,6 +66,9 @@ const Index = () => {
               )}
             </Button>
           </div>
+          
+          {/* Dream Journal button and sheet */}
+          <DreamJournal isDarkMode={isDarkMode} />
           
           <DreamTitle isDarkMode={isDarkMode} />
           

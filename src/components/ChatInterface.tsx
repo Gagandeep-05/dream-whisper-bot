@@ -1,11 +1,12 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, RefreshCw, BookmarkPlus } from 'lucide-react';
-import ChatMessage from './ChatMessage';
+
+import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import { v4 as uuidv4 } from 'uuid';
+import ApiKeyInput from './chat/ApiKeyInput';
+import ChatHeader from './chat/ChatHeader';
+import ChatMessages from './chat/ChatMessages';
+import MessageInput from './chat/MessageInput';
+import { generateAIResponse } from '../services/dreamInterpreter';
+import { saveDreamToJournal } from '../utils/dreamJournal';
 
 interface ChatInterfaceProps {
   isDarkMode: boolean;
@@ -27,78 +28,15 @@ const initialMessages = [
   }
 ];
 
-const dreamInterpretations = [
-  {
-    keywords: ['falling', 'fell'],
-    response: "Dreams about falling often represent insecurity, anxiety, or feeling that you're losing grip on something important in your life. It may suggest you feel out of control or overwhelmed by circumstances."
-  },
-  {
-    keywords: ['flying', 'flew', 'float'],
-    response: "Flying in dreams typically symbolize freedom, breaking free from limitations, or gaining a new perspective on life. It might reflect your desire for liberation from constraints or your ability to rise above challenges."
-  },
-  {
-    keywords: ['teeth', 'tooth', 'losing teeth'],
-    response: "Dreams about losing teeth often relate to anxiety about appearance, communication, or power. They may reflect fears about how others perceive you or concerns about losing your ability to communicate effectively."
-  },
-  {
-    keywords: ['chase', 'chased', 'running', 'pursued'],
-    response: "Being chased in dreams typically represents avoiding a person or issue. This could symbolize running away from your fears or refusing to acknowledge an uncomfortable situation in your waking life."
-  },
-  {
-    keywords: ['water', 'ocean', 'sea', 'swimming', 'flood'],
-    response: "Water in dreams often symbolize your emotional state. Calm water may represent peace of mind, while turbulent water could indicate emotional turmoil. Deep water might suggest exploring your unconscious mind."
-  },
-  {
-    keywords: ['death', 'dying', 'dead'],
-    response: "Dreams about death rarely predict actual death. Instead, they typically symbolize the end of something—perhaps a relationship, job, or phase of life—making way for new beginnings and transformation."
-  },
-  {
-    keywords: ['naked', 'nude', 'clothes'],
-    response: "Dreams of being naked or inappropriately dressed in public often reflect feelings of vulnerability, exposure, or imposter syndrome. They might indicate anxiety about being 'seen' for who you truly are."
-  },
-  {
-    keywords: ['test', 'exam', 'school', 'studying'],
-    response: "Test or exam dreams typically represent self-evaluation or fear of failure. They often appear when you're facing a challenging situation or feeling unprepared for something important in your life."
-  },
-];
-
-const getResponseForDream = (dreamDescription: string) => {
-  const dreamLower = dreamDescription.toLowerCase();
-  
-  const matchingInterpretations = dreamInterpretations.filter(item => 
-    item.keywords.some(keyword => dreamLower.includes(keyword))
-  );
-  
-  if (matchingInterpretations.length > 0) {
-    const randomIndex = Math.floor(Math.random() * matchingInterpretations.length);
-    return matchingInterpretations[randomIndex].response;
-  }
-  
-  return "Your dream appears to be unique. Dreams often reflect our subconscious processing daily experiences and emotions. The symbols in your dream may represent aspects of yourself or situations you're currently navigating. Consider how the emotions in your dream relate to your waking life.";
-};
-
-const HUGGINGFACE_API_URL = "https://api-inference.huggingface.co/models/HuggingFaceH4/zephyr-7b-beta";
-
 const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
-  const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [apiKey, setApiKey] = useState<string>(localStorage.getItem('dream-whisper-api-key') || '');
   const [showApiInput, setShowApiInput] = useState<boolean>(!localStorage.getItem('dream-whisper-api-key'));
   const [canSaveDream, setCanSaveDream] = useState(false);
   const [lastUserDream, setLastUserDream] = useState('');
   const [lastAiResponse, setLastAiResponse] = useState('');
-
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
-    }
-  }, [messages]);
 
   useEffect(() => {
     if (messages.length >= 3) {
@@ -116,69 +54,7 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
     setCanSaveDream(false);
   }, [messages]);
 
-  const generateAIResponse = async (dreamText: string) => {
-    try {
-      if (apiKey) {
-        const response = await fetch(HUGGINGFACE_API_URL, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${apiKey}`
-          },
-          body: JSON.stringify({
-            inputs: `You are a dream interpreter AI named Dream Whisper. Analyze this dream and provide insightful psychological interpretation in 3-5 sentences. Focus on symbolism, emotions, and possible real-life connections. Be mystical but insightful. Dream: "${dreamText}"`,
-            parameters: {
-              max_new_tokens: 250,
-              temperature: 0.7,
-              top_p: 0.9,
-              do_sample: true
-            }
-          }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          if (data && data[0] && data[0].generated_text) {
-            const fullText = data[0].generated_text;
-            const aiResponse = fullText.substring(fullText.indexOf(dreamText) + dreamText.length);
-            return aiResponse.trim();
-          }
-        }
-        
-        throw new Error("API response format unexpected");
-      }
-    } catch (error) {
-      console.error("AI API error:", error);
-      toast({
-        title: "AI Service Unavailable",
-        description: "Using built-in interpretations instead.",
-        variant: "destructive",
-      });
-    }
-    
-    return getResponseForDream(dreamText);
-  };
-
-  const handleSaveApiKey = () => {
-    if (apiKey.trim()) {
-      localStorage.setItem('dream-whisper-api-key', apiKey);
-      setShowApiInput(false);
-      toast({
-        title: "API Key Saved",
-        description: "Your API key has been saved for future sessions."
-      });
-    }
-  };
-
-  const handleUpdateApiKey = () => {
-    setShowApiInput(true);
-    toast({
-      title: "Update API Key",
-      description: "You can now enter a new API key."
-    });
-  };
-
-  const handleSendMessage = async () => {
+  const handleSendMessage = async (input: string) => {
     if (input.trim() === '') return;
     
     const userMessage = {
@@ -189,11 +65,10 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
     };
     
     setMessages(prev => [...prev, userMessage]);
-    setInput('');
     setLoading(true);
     
     try {
-      const response = await generateAIResponse(input);
+      const response = await generateAIResponse(input, apiKey);
       
       const aiMessage = {
         id: messages.length + 2,
@@ -218,55 +93,26 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
   };
 
   const handleSaveDream = () => {
-    const savedDreamsJson = localStorage.getItem('dream-whisper-journal');
-    let savedDreams = savedDreamsJson ? JSON.parse(savedDreamsJson) : [];
-    
-    const storedStreak = localStorage.getItem('dream-whisper-streak');
-    let currentStreak = storedStreak ? parseInt(storedStreak, 10) : 0;
-    
-    const today = new Date();
-    const todayString = today.toDateString();
-    const hasDreamToday = savedDreams.some((dream: any) => {
-      const dreamDate = new Date(dream.date).toDateString();
-      return dreamDate === todayString;
-    });
-    
-    if (!hasDreamToday) {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayString = yesterday.toDateString();
-      
-      const hadDreamYesterday = savedDreams.some((dream: any) => {
-        const dreamDate = new Date(dream.date).toDateString();
-        return dreamDate === yesterdayString;
-      });
-      
-      if (hadDreamYesterday || savedDreams.length === 0) {
-        currentStreak += 1;
-      } else {
-        currentStreak = 1;
-      }
-      
-      localStorage.setItem('dream-whisper-streak', currentStreak.toString());
-    }
-    
-    const newDream = {
-      id: uuidv4(),
-      date: new Date(),
-      content: lastUserDream,
-      interpretation: lastAiResponse,
-      streak: currentStreak
-    };
-    
-    savedDreams = [newDream, ...savedDreams];
-    localStorage.setItem('dream-whisper-journal', JSON.stringify(savedDreams));
-    
+    saveDreamToJournal(lastUserDream, lastAiResponse);
     toast({
       title: "Dream Saved",
       description: "Your dream has been saved to your journal."
     });
   };
 
+  const handleSaveApiKey = (key: string) => {
+    setApiKey(key);
+    setShowApiInput(false);
+  };
+
+  const handleUpdateApiKey = () => {
+    setShowApiInput(true);
+    toast({
+      title: "Update API Key",
+      description: "You can now enter a new API key."
+    });
+  };
+  
   return (
     <div className={`flex flex-col rounded-xl h-[500px] shadow-lg ${
       isDarkMode
@@ -274,115 +120,30 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
         : 'bg-white/80 backdrop-blur-sm border border-dream-orange/20'
     }`}>
       {showApiInput ? (
-        <div className={`p-3 border-b ${
-          isDarkMode ? 'bg-card/50' : 'bg-white/50 border-dream-orange/10'
-        }`}>
-          <div className="flex flex-col gap-2">
-            <p className="text-xs text-muted-foreground">Enter your Hugging Face API key for enhanced dream interpretation:</p>
-            <div className="flex gap-2">
-              <Input
-                type="password"
-                placeholder="Hugging Face API Key"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                className={`text-sm ${
-                  isDarkMode ? 'bg-background/50' : 'bg-white/70'
-                }`}
-              />
-              <Button 
-                onClick={handleSaveApiKey} 
-                disabled={!apiKey.trim()}
-                size="sm"
-                className={isDarkMode ? '' : 'bg-dream-orange hover:bg-dream-orange/90'}
-              >
-                Save
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground italic">
-              Get your free API key at <a href="https://huggingface.co/settings/tokens" target="_blank" rel="noopener noreferrer" className={`underline ${
-                isDarkMode ? 'hover:text-primary' : 'hover:text-dream-orange'
-              }`}>huggingface.co</a>
-            </p>
-          </div>
-        </div>
+        <ApiKeyInput 
+          isDarkMode={isDarkMode} 
+          onSave={handleSaveApiKey} 
+        />
       ) : (
-        <div className={`p-2 border-b flex justify-between items-center ${
-          isDarkMode ? 'bg-card/50' : 'bg-white/50 border-dream-orange/10'
-        }`}>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleSaveDream}
-            disabled={!canSaveDream}
-            className={`flex items-center gap-1 text-xs ${
-              !canSaveDream ? 'opacity-50' : ''
-            } ${
-              isDarkMode ? '' : 'text-dream-orange hover:text-dream-orange/90'
-            }`}
-          >
-            <BookmarkPlus className="h-3 w-3" />
-            Save Dream
-          </Button>
-          
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleUpdateApiKey}
-            className={`flex items-center gap-1 text-xs ${
-              isDarkMode ? '' : 'text-dream-orange hover:text-dream-orange/90'
-            }`}
-          >
-            <RefreshCw className="h-3 w-3" />
-            Update API Key
-          </Button>
-        </div>
+        <ChatHeader 
+          isDarkMode={isDarkMode}
+          canSaveDream={canSaveDream}
+          onSaveDream={handleSaveDream}
+          onUpdateApiKey={handleUpdateApiKey}
+        />
       )}
       
-      <ScrollArea ref={scrollAreaRef} className="flex-1 p-4">
-        <div className="space-y-4">
-          {messages.map(message => (
-            <ChatMessage
-              key={message.id}
-              message={message.content}
-              isUser={message.isUser}
-              timestamp={message.timestamp}
-              isDarkMode={isDarkMode}
-            />
-          ))}
-          {loading && (
-            <ChatMessage
-              message=""
-              loading={true}
-              timestamp={new Date()}
-              isDarkMode={isDarkMode}
-            />
-          )}
-        </div>
-      </ScrollArea>
+      <ChatMessages 
+        messages={messages}
+        loading={loading}
+        isDarkMode={isDarkMode}
+      />
       
-      <div className={`p-3 border-t ${
-        isDarkMode ? 'bg-card/50' : 'bg-white/50 border-dream-orange/10'
-      }`}>
-        <div className="flex gap-2">
-          <Input
-            placeholder="Describe your dream..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter') handleSendMessage();
-            }}
-            className={isDarkMode ? 'bg-background/50' : 'bg-white/70'}
-          />
-          <Button 
-            onClick={handleSendMessage} 
-            disabled={input.trim() === '' || loading}
-            size="icon"
-            className={isDarkMode ? '' : 'bg-dream-orange hover:bg-dream-orange/90'}
-          >
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
+      <MessageInput 
+        isDarkMode={isDarkMode}
+        loading={loading}
+        onSendMessage={handleSendMessage}
+      />
     </div>
   );
 };

@@ -32,11 +32,20 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const [apiKey, setApiKey] = useState<string>(localStorage.getItem('dream-whisper-api-key') || '');
-  const [showApiInput, setShowApiInput] = useState<boolean>(!localStorage.getItem('dream-whisper-api-key'));
+  const [apiKey, setApiKey] = useState<string>('');
+  const [showApiInput, setShowApiInput] = useState<boolean>(true);
   const [canSaveDream, setCanSaveDream] = useState(false);
   const [lastUserDream, setLastUserDream] = useState('');
   const [lastAiResponse, setLastAiResponse] = useState('');
+
+  // Load API key from localStorage on component mount
+  useEffect(() => {
+    const savedApiKey = localStorage.getItem('dream-whisper-api-key');
+    if (savedApiKey) {
+      setApiKey(savedApiKey);
+      setShowApiInput(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (messages.length >= 3) {

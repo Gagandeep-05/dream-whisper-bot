@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { Drawer as DrawerPrimitive } from "vaul"
 
@@ -45,9 +46,11 @@ const DrawerContent = React.forwardRef<
         className
       )}
       {...props}
+      aria-describedby={props['aria-describedby'] || "drawer-description"}
     >
       <div className="mx-auto mt-4 h-2 w-[100px] rounded-full bg-muted" />
       {children}
+      <div id="drawer-description" className="sr-only">Drawer content</div>
     </DrawerPrimitive.Content>
   </DrawerPortal>
 ))

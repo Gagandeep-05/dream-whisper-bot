@@ -1,7 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { Book } from 'lucide-react';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetDescription,
+  SheetTrigger 
+} from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import JournalHeader from './journal/JournalHeader';
@@ -162,6 +169,9 @@ const DreamJournal = ({ isDarkMode }: DreamJournalProps) => {
             <Book className="h-5 w-5" />
             <span>Dream Journal</span>
           </SheetTitle>
+          <SheetDescription className="text-muted-foreground">
+            Track and review your dream interpretations
+          </SheetDescription>
         </SheetHeader>
         
         <JournalHeader 

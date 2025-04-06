@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import ApiKeyInput from './chat/ApiKeyInput';
 import ChatHeader from './chat/ChatHeader';
 import ChatMessages from './chat/ChatMessages';
 import MessageInput from './chat/MessageInput';
@@ -32,20 +31,9 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const [apiKey, setApiKey] = useState<string>('');
-  const [showApiInput, setShowApiInput] = useState<boolean>(true);
   const [canSaveDream, setCanSaveDream] = useState(false);
   const [lastUserDream, setLastUserDream] = useState('');
   const [lastAiResponse, setLastAiResponse] = useState('');
-
-  // Load API key from localStorage on component mount
-  useEffect(() => {
-    const savedApiKey = localStorage.getItem('dream-whisper-api-key');
-    if (savedApiKey) {
-      setApiKey(savedApiKey);
-      setShowApiInput(false);
-    }
-  }, []);
 
   useEffect(() => {
     if (messages.length >= 3) {
@@ -77,7 +65,7 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
     setLoading(true);
     
     try {
-      const response = await generateAIResponse(input, apiKey);
+      const response = await generateAIResponse(input);
       
       const aiMessage = {
         id: messages.length + 2,
@@ -108,19 +96,6 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
       description: "Your dream has been saved to your journal."
     });
   };
-
-  const handleSaveApiKey = (key: string) => {
-    setApiKey(key);
-    setShowApiInput(false);
-  };
-
-  const handleUpdateApiKey = () => {
-    setShowApiInput(true);
-    toast({
-      title: "Update API Key",
-      description: "You can now enter a new Gemini API key."
-    });
-  };
   
   return (
     <div className={`flex flex-col rounded-xl h-[500px] shadow-lg ${
@@ -128,19 +103,11 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
         ? 'bg-card/30 backdrop-blur-sm border border-white/20'
         : 'bg-white/80 backdrop-blur-sm border border-dream-orange/20'
     }`}>
-      {showApiInput ? (
-        <ApiKeyInput 
-          isDarkMode={isDarkMode} 
-          onSave={handleSaveApiKey} 
-        />
-      ) : (
-        <ChatHeader 
-          isDarkMode={isDarkMode}
-          canSaveDream={canSaveDream}
-          onSaveDream={handleSaveDream}
-          onUpdateApiKey={handleUpdateApiKey}
-        />
-      )}
+      <ChatHeader 
+        isDarkMode={isDarkMode}
+        canSaveDream={canSaveDream}
+        onSaveDream={handleSaveDream}
+      />
       
       <ChatMessages 
         messages={messages}

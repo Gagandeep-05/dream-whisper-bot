@@ -1,21 +1,18 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, BookmarkPlus } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import { BookmarkPlus } from 'lucide-react';
 
 interface ChatHeaderProps {
   isDarkMode: boolean;
   canSaveDream: boolean;
   onSaveDream: () => void;
-  onUpdateApiKey: () => void;
 }
 
 const ChatHeader = ({ 
   isDarkMode, 
   canSaveDream, 
-  onSaveDream, 
-  onUpdateApiKey 
+  onSaveDream
 }: ChatHeaderProps) => {
 
   return (
@@ -37,17 +34,9 @@ const ChatHeader = ({
         Save Dream
       </Button>
       
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={onUpdateApiKey}
-        className={`flex items-center gap-1 text-xs ${
-          isDarkMode ? '' : 'text-dream-orange hover:text-dream-orange/90'
-        }`}
-      >
-        <RefreshCw className="h-3 w-3" />
-        Update API Key
-      </Button>
+      <div className="text-xs text-muted-foreground opacity-70">
+        Powered by Gemini AI
+      </div>
     </div>
   );
 };

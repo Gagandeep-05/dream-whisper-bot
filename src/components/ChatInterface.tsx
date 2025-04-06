@@ -22,7 +22,7 @@ interface Message {
 const initialMessages = [
   {
     id: 1,
-    content: "Welcome to Dream Whisper! Describe your dream and I'll unravel its hidden meanings for you. What did you dream about?",
+    content: "Welcome to Dream Whisper! Describe your dream and I'll unravel its hidden meanings for you using Google's Gemini AI. What did you dream about?",
     isUser: false,
     timestamp: new Date()
   }
@@ -118,7 +118,7 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
     setShowApiInput(true);
     toast({
       title: "Update API Key",
-      description: "You can now enter a new API key."
+      description: "You can now enter a new Gemini API key."
     });
   };
   

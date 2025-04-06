@@ -6,6 +6,7 @@ import ChatMessages from './chat/ChatMessages';
 import MessageInput from './chat/MessageInput';
 import { generateAIResponse } from '../services/dreamInterpreter';
 import { saveDreamToJournal } from '../utils/dreamJournal';
+import { getResponseForDream } from '../utils/dreamInterpretations';
 
 interface ChatInterfaceProps {
   isDarkMode: boolean;
@@ -67,6 +68,15 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
     try {
       const response = await generateAIResponse(input);
       
+      // Check if the response is from the fallback (local interpretations)
+      if (response === getResponseForDream(input)) {
+        toast({
+          title: "AI Service Unavailable",
+          description: "Using built-in interpretations instead.",
+          variant: "destructive",
+        });
+      }
+      
       const aiMessage = {
         id: messages.length + 2,
         content: response,
@@ -77,6 +87,12 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error("Error generating response:", error);
+      toast({
+        title: "Interpretation Error",
+        description: "I'm having trouble interpreting dreams right now. Please try again later.",
+        variant: "destructive",
+      });
+      
       const errorMessage = {
         id: messages.length + 2,
         content: "I'm having trouble interpreting dreams right now. Please try again later.",

@@ -1,13 +1,10 @@
 
 import { getResponseForDream } from "../utils/dreamInterpretations";
-import { useToast } from "@/hooks/use-toast";
 
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent";
 const EMBEDDED_API_KEY = "AIzaSyCT5qQlbQA-qOQpk47x5XiEfjNQS0iMezw";
 
 export const generateAIResponse = async (dreamText: string): Promise<string> => {
-  const toast = useToast();
-  
   try {
     // Always use the embedded Gemini API key
     const response = await fetch(`${GEMINI_API_URL}?key=${EMBEDDED_API_KEY}`, {
@@ -44,12 +41,7 @@ export const generateAIResponse = async (dreamText: string): Promise<string> => 
     throw new Error("Gemini API response format unexpected");
   } catch (error) {
     console.error("AI API error:", error);
-    toast.toast({
-      title: "AI Service Unavailable",
-      description: "Using built-in interpretations instead.",
-      variant: "destructive",
-    });
+    // Remove useToast hook here and just use fallback
+    return getResponseForDream(dreamText);
   }
-  
-  return getResponseForDream(dreamText);
 };

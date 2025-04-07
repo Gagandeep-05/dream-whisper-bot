@@ -1,11 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import ChatHeader from './chat/ChatHeader';
 import ChatMessages from './chat/ChatMessages';
 import MessageInput from './chat/MessageInput';
 import { generateAIResponse } from '../services/dreamInterpreter';
-import { saveDreamToJournal } from '../utils/dreamJournal';
 import { getResponseForDream } from '../utils/dreamInterpretations';
 
 interface ChatInterfaceProps {
@@ -32,25 +31,6 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const [canSaveDream, setCanSaveDream] = useState(false);
-  const [lastUserDream, setLastUserDream] = useState('');
-  const [lastAiResponse, setLastAiResponse] = useState('');
-
-  useEffect(() => {
-    if (messages.length >= 3) {
-      const userMessageIndex = messages.findIndex(m => m.isUser);
-      if (userMessageIndex !== -1 && userMessageIndex < messages.length - 1) {
-        const aiResponseIndex = messages.findIndex((m, i) => !m.isUser && i > userMessageIndex);
-        if (aiResponseIndex !== -1) {
-          setCanSaveDream(true);
-          setLastUserDream(messages[userMessageIndex].content);
-          setLastAiResponse(messages[aiResponseIndex].content);
-          return;
-        }
-      }
-    }
-    setCanSaveDream(false);
-  }, [messages]);
 
   const handleSendMessage = async (input: string) => {
     if (input.trim() === '') return;
@@ -104,14 +84,6 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
       setLoading(false);
     }
   };
-
-  const handleSaveDream = () => {
-    saveDreamToJournal(lastUserDream, lastAiResponse);
-    toast({
-      title: "Dream Saved",
-      description: "Your dream has been saved to your journal."
-    });
-  };
   
   return (
     <div className={`flex flex-col rounded-xl h-[500px] shadow-lg ${
@@ -119,11 +91,7 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
         ? 'bg-card/30 backdrop-blur-sm border border-white/20'
         : 'bg-white/80 backdrop-blur-sm border border-dream-orange/20'
     }`}>
-      <ChatHeader 
-        isDarkMode={isDarkMode}
-        canSaveDream={canSaveDream}
-        onSaveDream={handleSaveDream}
-      />
+      <ChatHeader isDarkMode={isDarkMode} />
       
       <ChatMessages 
         messages={messages}

@@ -1,10 +1,10 @@
 
 import React from 'react';
+import { Link } from 'react-router-dom';
 import DreamTitle from '@/components/DreamTitle';
 import ChatInterface from '@/components/ChatInterface';
 import DreamInsight from '@/components/DreamInsight';
-import DreamJournal from '@/components/DreamJournal';
-import { MoonIcon, SunIcon } from 'lucide-react';
+import { MoonIcon, SunIcon, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 
@@ -67,8 +67,20 @@ const Index = () => {
             </Button>
           </div>
           
-          {/* Dream Journal button and sheet */}
-          <DreamJournal isDarkMode={isDarkMode} />
+          {/* Developers button */}
+          <Link to="/developers">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className={`rounded-full absolute top-4 right-14 backdrop-blur-sm ${
+                isDarkMode 
+                  ? 'bg-background/20 text-dream-purple hover:bg-background/30 hover:text-purple-300' 
+                  : 'bg-white/30 text-dream-orange hover:bg-white/40 hover:text-orange-500'
+              }`}
+            >
+              <Info className="h-5 w-5" />
+            </Button>
+          </Link>
           
           <DreamTitle isDarkMode={isDarkMode} />
           

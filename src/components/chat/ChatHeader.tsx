@@ -1,15 +1,17 @@
 
 import React from 'react';
-import { Star, Settings } from 'lucide-react';
+import { Star, Settings, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 interface ChatHeaderProps {
   isDarkMode: boolean;
   onShowApiInput: () => void;
   showApiInput: boolean;
+  usingFallback?: boolean;
 }
 
-const ChatHeader = ({ isDarkMode, onShowApiInput, showApiInput }: ChatHeaderProps) => {
+const ChatHeader = ({ isDarkMode, onShowApiInput, showApiInput, usingFallback = false }: ChatHeaderProps) => {
   return (
     <div className={`p-4 border-b transition-all duration-300 ${
       isDarkMode 
@@ -22,9 +24,18 @@ const ChatHeader = ({ isDarkMode, onShowApiInput, showApiInput }: ChatHeaderProp
             isDarkMode ? 'text-dream-purple' : 'text-dream-orange'
           }`} />
           <h2 className="font-semibold">Dream Interpreter</h2>
-          <span className="text-xs bg-green-500/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full animate-pulse">
-            Gemini API v1
-          </span>
+          {usingFallback ? (
+            <Badge variant="destructive" className="text-xs px-2 py-0.5 animate-pulse flex items-center gap-1">
+              <AlertCircle className="h-3 w-3" />
+              <span>Using Fallback</span>
+            </Badge>
+          ) : (
+            <Badge variant="default" className={`text-xs px-2 py-0.5 animate-pulse ${
+              isDarkMode ? 'bg-green-600/20 text-green-400' : 'bg-green-500/20 text-green-600'
+            }`}>
+              Gemini API v1
+            </Badge>
+          )}
         </div>
         <Button
           variant="ghost"

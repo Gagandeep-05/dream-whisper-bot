@@ -33,6 +33,7 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
   const [loading, setLoading] = useState(false);
   const [showApiInput, setShowApiInput] = useState(false);
   const [apiKey, setApiKey] = useState<string>(localStorage.getItem('dream-whisper-api-key') || '');
+  const [usingFallback, setUsingFallback] = useState(false);
   const { toast } = useToast();
 
   const handleSendMessage = async (input: string) => {
@@ -47,16 +48,28 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
     
     setMessages(prev => [...prev, userMessage]);
     setLoading(true);
+    setUsingFallback(false);
     
     try {
       let response;
       
-      // Try with the Gemini AI
       try {
+        console.log("Sending dream for interpretation:", input);
         response = await generateAIResponse(input, apiKey);
+        
+        // Check if we got a fallback response by comparing with local interpretations
+        const fallbackResponse = getResponseForDream(input);
+        if (response === fallbackResponse) {
+          setUsingFallback(true);
+          toast({
+            title: "Using Local Interpretations",
+            description: "Could not connect to Gemini API. Using built-in interpretations instead.",
+            variant: "destructive",
+          });
+        }
       } catch (error) {
         console.error("Error with AI service:", error);
-        // Fallback to local interpretations
+        setUsingFallback(true);
         response = getResponseForDream(input);
         toast({
           title: "AI Service Unavailable",
@@ -113,6 +126,7 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
         isDarkMode={isDarkMode} 
         onShowApiInput={() => setShowApiInput(!showApiInput)}
         showApiInput={showApiInput}
+        usingFallback={usingFallback}
       />
       
       {showApiInput && (

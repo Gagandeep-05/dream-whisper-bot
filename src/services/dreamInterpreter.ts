@@ -1,7 +1,7 @@
 
 import { getResponseForDream } from "../utils/dreamInterpretations";
 
-// The updated Gemini API URL - corrected to use the v1 endpoint
+// The Gemini API URL
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
 // Your provided Gemini API key
 const EMBEDDED_API_KEY = "AIzaSyBA2ioj6vFF2PzchuZypXeoCWEiqYlsmLA";
@@ -16,45 +16,52 @@ export const generateAIResponse = async (
     // Use user-provided key if available, otherwise use embedded key
     const activeKey = (geminiApiKey && geminiApiKey.trim() !== '') ? geminiApiKey : EMBEDDED_API_KEY;
     
-    console.log("Using Gemini API with URL:", GEMINI_API_URL);
+    console.log("Attempting Gemini API request...");
+    
+    const requestPayload = {
+      contents: [
+        {
+          parts: [
+            {
+              text: `You are a dream interpreter AI named Dream Whisper. Analyze this dream and provide insightful psychological interpretation in 3-5 sentences. Focus on symbolism, emotions, and possible real-life connections. Be mystical but insightful. Dream: "${dreamText}"`
+            }
+          ]
+        }
+      ],
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 250,
+      }
+    };
+    
+    console.log("Request payload:", JSON.stringify(requestPayload, null, 2));
     
     const response = await fetch(`${GEMINI_API_URL}?key=${activeKey}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: `You are a dream interpreter AI named Dream Whisper. Analyze this dream and provide insightful psychological interpretation in 3-5 sentences. Focus on symbolism, emotions, and possible real-life connections. Be mystical but insightful. Dream: "${dreamText}"`
-              }
-            ]
-          }
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 250,
-        }
-      }),
+      body: JSON.stringify(requestPayload),
     });
 
+    console.log("API response status:", response.status);
+    
+    const responseData = await response.json();
+    console.log("API response data:", JSON.stringify(responseData, null, 2));
+
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Gemini API error response:", errorData);
-      throw new Error(`Gemini API error: ${errorData.error?.message || response.statusText}`);
+      throw new Error(`Gemini API error: ${responseData.error?.message || response.statusText}`);
     }
 
-    const data = await response.json();
-    if (data && data.candidates && data.candidates[0] && data.candidates[0].content) {
-      return data.candidates[0].content.parts[0].text.trim();
+    if (responseData && responseData.candidates && responseData.candidates[0] && responseData.candidates[0].content) {
+      const aiResponse = responseData.candidates[0].content.parts[0].text.trim();
+      console.log("Successfully received AI response:", aiResponse.substring(0, 50) + "...");
+      return aiResponse;
     }
     
-    console.error("Unexpected Gemini API response format:", data);
-    throw new Error("Gemini API response format unexpected");
+    throw new Error("Unexpected Gemini API response format");
   } catch (error) {
     console.error("AI API error:", error);
     // Fall back to local interpretations

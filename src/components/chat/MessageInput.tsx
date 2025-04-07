@@ -46,15 +46,15 @@ const MessageInput = ({
             isDarkMode 
               ? 'bg-background/50 focus:ring-dream-purple/30' 
               : 'bg-white/70 focus:ring-dream-orange/30'
-          }`}
+          } hover:scale-[1.01] animate-fade-in`}
         />
         <Button 
           onClick={handleSend} 
           disabled={input.trim() === '' || loading}
           size="icon"
-          className={`transition-all duration-300 hover:scale-105 ${
+          className={`transition-all duration-300 hover:scale-110 ${
             isDarkMode ? '' : 'bg-dream-orange hover:bg-dream-orange/90'
-          }`}
+          } ${loading ? 'animate-pulse' : ''}`}
         >
           <Send className={`h-4 w-4 ${loading ? 'animate-pulse' : ''}`} />
         </Button>

@@ -22,6 +22,9 @@ const ChatHeader = ({ isDarkMode, onShowApiInput, showApiInput }: ChatHeaderProp
             isDarkMode ? 'text-dream-purple' : 'text-dream-orange'
           }`} />
           <h2 className="font-semibold">Dream Interpreter</h2>
+          <span className="text-xs bg-green-500/20 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full animate-fade-in">
+            Gemini API Enabled
+          </span>
         </div>
         <Button
           variant="ghost"

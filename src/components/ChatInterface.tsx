@@ -22,7 +22,7 @@ interface Message {
 const initialMessages = [
   {
     id: 1,
-    content: "Welcome to Dream Whisper! Describe your dream and I'll unravel its hidden meanings for you using advanced AI. What did you dream about?",
+    content: "Welcome to Dream Whisper! Describe your dream and I'll unravel its hidden meanings for you using Gemini AI. What did you dream about?",
     isUser: false,
     timestamp: new Date()
   }
@@ -33,9 +33,6 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
   const [loading, setLoading] = useState(false);
   const [showApiInput, setShowApiInput] = useState(false);
   const [apiKey, setApiKey] = useState<string>(localStorage.getItem('dream-whisper-api-key') || '');
-  const [huggingFaceKey, setHuggingFaceKey] = useState<string>(
-    localStorage.getItem('dream-whisper-huggingface-key') || ''
-  );
   const { toast } = useToast();
 
   const handleSendMessage = async (input: string) => {
@@ -54,9 +51,9 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
     try {
       let response;
       
-      // Try with the Gemini AI first
+      // Try with the Gemini AI
       try {
-        response = await generateAIResponse(input, apiKey, huggingFaceKey);
+        response = await generateAIResponse(input, apiKey);
       } catch (error) {
         console.error("Error with AI service:", error);
         // Fallback to local interpretations
@@ -96,26 +93,21 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
     }
   };
 
-  const handleSaveApiKey = (key: string, type: 'gemini' | 'huggingface') => {
-    if (type === 'gemini') {
-      setApiKey(key);
-      localStorage.setItem('dream-whisper-api-key', key);
-    } else {
-      setHuggingFaceKey(key);
-      localStorage.setItem('dream-whisper-huggingface-key', key);
-    }
+  const handleSaveApiKey = (key: string) => {
+    setApiKey(key);
+    localStorage.setItem('dream-whisper-api-key', key);
     
     toast({
-      title: `${type === 'gemini' ? 'Gemini' : 'HuggingFace'} API Key Saved`,
-      description: `Your ${type === 'gemini' ? 'Gemini' : 'HuggingFace'} API key has been saved for future sessions.`
+      title: "Gemini API Key Updated",
+      description: "Your Gemini API key has been saved for future sessions."
     });
   };
   
   return (
     <div className={`flex flex-col rounded-xl h-[500px] shadow-lg transition-all duration-500 ${
       isDarkMode
-        ? 'bg-card/30 backdrop-blur-sm border border-white/20 animate-fade-in'
-        : 'bg-white/80 backdrop-blur-sm border border-dream-orange/20 animate-fade-in'
+        ? 'bg-card/30 backdrop-blur-sm border border-white/20 animate-fade-in hover:border-primary/30'
+        : 'bg-white/80 backdrop-blur-sm border border-dream-orange/20 animate-fade-in hover:border-dream-orange/30'
     }`}>
       <ChatHeader 
         isDarkMode={isDarkMode} 
@@ -127,7 +119,6 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
         <ApiKeyInput 
           isDarkMode={isDarkMode} 
           geminiKey={apiKey}
-          huggingfaceKey={huggingFaceKey}
           onSave={handleSaveApiKey}
         />
       )}

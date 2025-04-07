@@ -20,11 +20,13 @@ const ChatMessage = ({
 }: ChatMessageProps) => {
   return (
     <div className={cn(
-      "flex gap-3 mb-4 animate-fade-in",
-      isUser ? "flex-row-reverse" : ""
+      "flex gap-3 mb-4",
+      isUser 
+        ? "flex-row-reverse animate-slide-in-right" 
+        : "animate-slide-in-left"
     )}>
       <Avatar className={cn(
-        "h-8 w-8 border",
+        "h-8 w-8 border transition-all duration-300 hover:scale-110",
         isUser 
           ? isDarkMode 
             ? "bg-accent/20 border-accent/30" 
@@ -39,7 +41,7 @@ const ChatMessage = ({
       </Avatar>
       
       <div className={cn(
-        "rounded-xl p-3 max-w-[80%]",
+        "rounded-xl p-3 max-w-[80%] transition-all duration-300 hover:shadow-md",
         isUser 
           ? isDarkMode 
             ? "bg-accent/10 border border-accent/20 text-right" 
@@ -50,13 +52,13 @@ const ChatMessage = ({
       )}>
         {loading ? (
           <div className="flex items-center justify-center space-x-1 h-6 py-2">
-            <div className={`w-2 h-2 rounded-full animate-pulse ${
+            <div className={`w-2 h-2 rounded-full animate-bounce ${
               isDarkMode ? 'bg-primary' : 'bg-dream-orange'
             }`}></div>
-            <div className={`w-2 h-2 rounded-full animate-pulse ${
+            <div className={`w-2 h-2 rounded-full animate-bounce ${
               isDarkMode ? 'bg-primary' : 'bg-dream-orange'
             }`} style={{animationDelay: '0.2s'}}></div>
-            <div className={`w-2 h-2 rounded-full animate-pulse ${
+            <div className={`w-2 h-2 rounded-full animate-bounce ${
               isDarkMode ? 'bg-primary' : 'bg-dream-orange'
             }`} style={{animationDelay: '0.4s'}}></div>
           </div>

@@ -1,25 +1,40 @@
 
 import React from 'react';
-import { Star } from 'lucide-react';
+import { Star, Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface ChatHeaderProps {
   isDarkMode: boolean;
+  onShowApiInput: () => void;
+  showApiInput: boolean;
 }
 
-const ChatHeader = ({ isDarkMode }: ChatHeaderProps) => {
+const ChatHeader = ({ isDarkMode, onShowApiInput, showApiInput }: ChatHeaderProps) => {
   return (
-    <div className={`p-4 border-b ${
+    <div className={`p-4 border-b transition-all duration-300 ${
       isDarkMode 
         ? 'border-gray-700/30' 
         : 'border-dream-orange/20'
     }`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Star className={`h-5 w-5 ${
+          <Star className={`h-5 w-5 animate-pulse ${
             isDarkMode ? 'text-dream-purple' : 'text-dream-orange'
           }`} />
           <h2 className="font-semibold">Dream Interpreter</h2>
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onShowApiInput}
+          className={`rounded-full transition-all duration-300 hover:rotate-12 ${
+            showApiInput 
+              ? isDarkMode ? 'bg-primary/20 text-primary' : 'bg-dream-orange/20 text-dream-orange' 
+              : ''
+          }`}
+        >
+          <Settings className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );

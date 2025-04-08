@@ -1,47 +1,47 @@
 
 import { getResponseForDream } from "../utils/dreamInterpretations";
 
-// The Gemini API URL
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
-// Your provided Gemini API key
-const EMBEDDED_API_KEY = "AIzaSyBA2ioj6vFF2PzchuZypXeoCWEiqYlsmLA";
+// The OpenRouter API URL
+const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
+// Your provided OpenRouter API key
+const OPENROUTER_API_KEY = "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";
 
 export const generateAIResponse = async (
   dreamText: string, 
-  geminiApiKey?: string,
+  customApiKey?: string,
   huggingfaceApiKey?: string
 ): Promise<string> => {
-  // Try Gemini API
+  // Try OpenRouter API to access Gemini
   try {
     // Use user-provided key if available, otherwise use embedded key
-    const activeKey = (geminiApiKey && geminiApiKey.trim() !== '') ? geminiApiKey : EMBEDDED_API_KEY;
+    const apiKey = (customApiKey && customApiKey.trim() !== '') ? customApiKey : OPENROUTER_API_KEY;
     
-    console.log("Attempting Gemini API request...");
+    console.log("Attempting OpenRouter API request to access Gemini model...");
     
     const requestPayload = {
-      contents: [
+      model: "google/gemini-2.5-pro-exp-03-25:free", // Using Gemini 2.5 through OpenRouter
+      messages: [
         {
-          parts: [
+          role: "user",
+          content: [
             {
+              type: "text",
               text: `You are a dream interpreter AI named Dream Whisper. Analyze this dream and provide insightful psychological interpretation in 3-5 sentences. Focus on symbolism, emotions, and possible real-life connections. Be mystical but insightful. Dream: "${dreamText}"`
             }
           ]
         }
-      ],
-      generationConfig: {
-        temperature: 0.7,
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 250,
-      }
+      ]
     };
     
     console.log("Request payload:", JSON.stringify(requestPayload, null, 2));
     
-    const response = await fetch(`${GEMINI_API_URL}?key=${activeKey}`, {
+    const response = await fetch(OPENROUTER_API_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Authorization": `Bearer ${apiKey}`,
+        "HTTP-Referer": window.location.href, // Site URL for OpenRouter analytics
+        "X-Title": "Dream Whisper", // App name for OpenRouter analytics
+        "Content-Type": "application/json"
       },
       body: JSON.stringify(requestPayload),
     });
@@ -52,16 +52,16 @@ export const generateAIResponse = async (
     console.log("API response data:", JSON.stringify(responseData, null, 2));
 
     if (!response.ok) {
-      throw new Error(`Gemini API error: ${responseData.error?.message || response.statusText}`);
+      throw new Error(`OpenRouter API error: ${responseData.error?.message || response.statusText}`);
     }
 
-    if (responseData && responseData.candidates && responseData.candidates[0] && responseData.candidates[0].content) {
-      const aiResponse = responseData.candidates[0].content.parts[0].text.trim();
+    if (responseData && responseData.choices && responseData.choices.length > 0) {
+      const aiResponse = responseData.choices[0].message.content;
       console.log("Successfully received AI response:", aiResponse.substring(0, 50) + "...");
       return aiResponse;
     }
     
-    throw new Error("Unexpected Gemini API response format");
+    throw new Error("Unexpected OpenRouter API response format");
   } catch (error) {
     console.error("AI API error:", error);
     // Fall back to local interpretations

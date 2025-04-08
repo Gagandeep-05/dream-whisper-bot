@@ -3,22 +3,22 @@ import { getResponseForDream } from "../utils/dreamInterpretations";
 
 // The OpenRouter API URL
 const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions";
-// Default OpenRouter API key
-const DEFAULT_OPENROUTER_API_KEY = "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";
+// Updated OpenRouter API key (free tier)
+const DEFAULT_OPENROUTER_API_KEY = "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";
 
 export const generateAIResponse = async (
   dreamText: string, 
   customApiKey?: string
 ): Promise<{ response: string; usingFallback: boolean }> => {
-  // Try OpenRouter API with Claude model (more reliable than Gemini)
+  // Try with primary model first
   try {
     // Use user-provided key if available, otherwise use embedded key
     const apiKey = (customApiKey && customApiKey.trim() !== '') ? customApiKey : DEFAULT_OPENROUTER_API_KEY;
     
-    console.log("Attempting OpenRouter API request...");
+    console.log("Attempting OpenRouter API request with Claude model...");
     
     const requestPayload = {
-      model: "anthropic/claude-3-haiku", // Using Claude 3 Haiku - reliable and fast
+      model: "anthropic/claude-instant-1.2", // Using Claude Instant - fast and reliable free tier model
       messages: [
         {
           role: "user",
@@ -62,14 +62,14 @@ export const generateAIResponse = async (
   } catch (error) {
     console.error("AI API error:", error);
     
-    // Try fallback with a different model if first attempt failed
+    // Try with a more widely available free model as fallback
     try {
       const apiKey = (customApiKey && customApiKey.trim() !== '') ? customApiKey : DEFAULT_OPENROUTER_API_KEY;
       
-      console.log("First model failed, trying fallback with mistralai/mistral-small...");
+      console.log("First model failed, trying fallback with gpt2...");
       
       const fallbackPayload = {
-        model: "mistralai/mistral-small", // Reliable fallback model
+        model: "openai/gpt-3.5-turbo", // Very reliable fallback model
         messages: [
           {
             role: "user",

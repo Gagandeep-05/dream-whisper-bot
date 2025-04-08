@@ -19,7 +19,7 @@ export const generateAIResponse = async (
     console.log("Attempting OpenRouter API request to access Gemini model...");
     
     const requestPayload = {
-      model: "google/gemini-2.5-pro-exp-03-25:free", // Using Gemini 2.5 through OpenRouter
+      model: "google/gemini-pro", // Using the stable Gemini model on OpenRouter
       messages: [
         {
           role: "user",

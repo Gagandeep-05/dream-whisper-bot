@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import ChatHeader from './chat/ChatHeader';
@@ -22,7 +21,7 @@ interface Message {
 const initialMessages = [
   {
     id: 1,
-    content: "Welcome to Dream Whisper! Describe your dream and I'll unravel its hidden meanings for you using Gemini AI. What did you dream about?",
+    content: "Welcome to Dream Whisper! Describe your dream and I'll unravel its hidden meanings for you using Claude AI. What did you dream about?",
     isUser: false,
     timestamp: new Date()
   }
@@ -51,36 +50,22 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
     setUsingFallback(false);
     
     try {
-      let response;
+      console.log("Sending dream for interpretation:", input);
+      const result = await generateAIResponse(input, apiKey);
       
-      try {
-        console.log("Sending dream for interpretation:", input);
-        response = await generateAIResponse(input, apiKey);
-        
-        // Check if we got a fallback response by comparing with local interpretations
-        const fallbackResponse = getResponseForDream(input);
-        if (response === fallbackResponse) {
-          setUsingFallback(true);
-          toast({
-            title: "Using Local Interpretations",
-            description: "Could not connect to Gemini API. Using built-in interpretations instead.",
-            variant: "destructive",
-          });
-        }
-      } catch (error) {
-        console.error("Error with AI service:", error);
-        setUsingFallback(true);
-        response = getResponseForDream(input);
+      setUsingFallback(result.usingFallback);
+      
+      if (result.usingFallback) {
         toast({
-          title: "AI Service Unavailable",
-          description: "Using built-in interpretations instead.",
+          title: "Using Local Interpretations",
+          description: "Could not connect to AI service. Using built-in interpretations instead.",
           variant: "destructive",
         });
       }
       
       const aiMessage = {
         id: messages.length + 2,
-        content: response,
+        content: result.response,
         isUser: false,
         timestamp: new Date()
       };
@@ -88,6 +73,8 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error("Error generating response:", error);
+      setUsingFallback(true);
+      
       toast({
         title: "Interpretation Error",
         description: "I'm having trouble interpreting dreams right now. Please try again later.",
@@ -111,8 +98,8 @@ const ChatInterface = ({ isDarkMode }: ChatInterfaceProps) => {
     localStorage.setItem('dream-whisper-api-key', key);
     
     toast({
-      title: "Gemini API Key Updated",
-      description: "Your Gemini API key has been saved for future sessions."
+      title: "OpenRouter API Key Updated",
+      description: "Your API key has been saved for future sessions."
     });
   };
   

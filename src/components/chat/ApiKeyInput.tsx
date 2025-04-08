@@ -39,7 +39,7 @@ const ApiKeyInput = ({ isDarkMode, geminiKey, onSave }: ApiKeyInputProps) => {
           <div className="flex gap-2 items-start">
             <Info className="h-4 w-4 shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium mb-1">OpenRouter provides access to Gemini</p>
+              <p className="font-medium mb-1">Using Claude AI via OpenRouter</p>
               <p>You can update your API key below if needed. Current key: {geminiKey ? "**********************************" : "Using default key"}</p>
             </div>
           </div>

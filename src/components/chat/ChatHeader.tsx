@@ -33,7 +33,7 @@ const ChatHeader = ({ isDarkMode, onShowApiInput, showApiInput, usingFallback = 
             <Badge variant="default" className={`text-xs px-2 py-0.5 animate-pulse ${
               isDarkMode ? 'bg-green-600/20 text-green-400' : 'bg-green-500/20 text-green-600'
             }`}>
-              Gemini via OpenRouter
+              Claude via OpenRouter
             </Badge>
           )}
         </div>

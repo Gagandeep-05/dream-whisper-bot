@@ -23,12 +23,7 @@ export const generateAIResponse = async (
       messages: [
         {
           role: "user",
-          content: [
-            {
-              type: "text",
-              text: `You are a dream interpreter AI named Dream Whisper. Analyze this dream and provide insightful psychological interpretation in 3-5 sentences. Focus on symbolism, emotions, and possible real-life connections. Be mystical but insightful. Dream: "${dreamText}"`
-            }
-          ]
+          content: `You are a dream interpreter AI named Dream Whisper. Analyze this dream and provide insightful psychological interpretation in 3-5 sentences. Focus on symbolism, emotions, and possible real-life connections. Be mystical but insightful. Dream: "${dreamText}"`
         }
       ]
     };
@@ -48,12 +43,14 @@ export const generateAIResponse = async (
 
     console.log("API response status:", response.status);
     
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("OpenRouter API error response:", errorText);
+      throw new Error(`OpenRouter API error: ${response.status} ${response.statusText}`);
+    }
+    
     const responseData = await response.json();
     console.log("API response data:", JSON.stringify(responseData, null, 2));
-
-    if (!response.ok) {
-      throw new Error(`OpenRouter API error: ${responseData.error?.message || response.statusText}`);
-    }
 
     if (responseData && responseData.choices && responseData.choices.length > 0) {
       const aiResponse = responseData.choices[0].message.content;

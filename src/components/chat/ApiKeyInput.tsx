@@ -39,7 +39,7 @@ const ApiKeyInput = ({ isDarkMode, geminiKey, onSave }: ApiKeyInputProps) => {
           <div className="flex gap-2 items-start">
             <Info className="h-4 w-4 shrink-0 mt-0.5" />
             <div>
-              <p className="font-medium mb-1">OpenRouter API is configured!</p>
+              <p className="font-medium mb-1">OpenRouter API allows access to Gemini 2.5</p>
               <p>You can update your API key below if needed. Current key: {geminiKey ? "**********************************" : "Using default key"}</p>
             </div>
           </div>
@@ -49,7 +49,7 @@ const ApiKeyInput = ({ isDarkMode, geminiKey, onSave }: ApiKeyInputProps) => {
           <div className="flex gap-2">
             <Input
               type="password"
-              placeholder="Enter new OpenRouter API key..."
+              placeholder="Enter OpenRouter API key..."
               value={apiKey}
               onChange={(e) => setApiKey(e.target.value)}
               className={`text-sm transition-all duration-300 hover:scale-[1.01] ${
@@ -66,9 +66,9 @@ const ApiKeyInput = ({ isDarkMode, geminiKey, onSave }: ApiKeyInputProps) => {
             </Button>
           </div>
           <p className="text-xs text-muted-foreground italic">
-            Using <a href="https://openrouter.ai/" target="_blank" rel="noopener noreferrer" className={`underline ${
+            Get your API key at <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className={`underline ${
               isDarkMode ? 'hover:text-primary' : 'hover:text-dream-orange'
-            }`}>OpenRouter</a> to access Gemini 2.5 Pro
+            }`}>openrouter.ai/keys</a>
           </p>
         </div>
       </div>
